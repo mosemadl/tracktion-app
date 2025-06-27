@@ -22,5 +22,9 @@ RUN dotnet publish -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
+
+# Force Kestrel to bind to port 8080
+ENV ASPNETCORE_URLS=http://+:8080
+
 ENTRYPOINT ["dotnet", "TracktionApp.dll"]
 
