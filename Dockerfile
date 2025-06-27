@@ -1,22 +1,23 @@
-# Build stage
+# Use the official .NET SDK image to build the app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copy csproj and restore as distinct layers
-COPY *.csproj ./
+# Copy everything
+COPY . ./
+
+# Go to the subdirectory that contains the .csproj file
+WORKDIR /app/TracktionApp
+
+# Restore dependencies
 RUN dotnet restore
 
-# Copy everything else and build
-COPY . ./
-RUN dotnet publish -c Release -o out
+# Build
+RUN dotnet publish -c Release -o /app/publish
 
-# Runtime stage
+# Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=build /app/out .
+COPY --from=build /app/publish .
 
-# The port your app will listen on (change if needed)
-ENV ASPNETCORE_URLS=http://+:8080
-EXPOSE 8080
-
+# Run the application
 ENTRYPOINT ["dotnet", "TracktionApp.dll"]
