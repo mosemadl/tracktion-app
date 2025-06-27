@@ -1,23 +1,20 @@
 # Use the official .NET SDK image to build the app
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
+EXPOSE 80
 
-# Copy everything
-COPY . ./
-
-# Go to the subdirectory that contains the .csproj file
-WORKDIR /app/TracktionApp
-
-# Restore dependencies
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+COPY *.csproj ./
 RUN dotnet restore
 
-# Build
+COPY . .
+WORKDIR /src
+RUN dotnet build -c Release -o /app/build
 RUN dotnet publish -c Release -o /app/publish
 
-# Runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-
-# Run the application
 ENTRYPOINT ["dotnet", "TracktionApp.dll"]
+
